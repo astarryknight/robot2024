@@ -72,6 +72,43 @@ public class Arm extends SubsystemBase {
 		inputs.velocity_radps = encoder.getVelocity();
 	}
 
+	/** Enum to store and access distance and arm rotation values from one constructor	 */
+	enum testedValue {
+		private double distanceFromTarget; //total distance (hypotenuse from x and z directions) from the center of the robot to the target, in meters
+		private double armPosition_deg; //position of the arm motor(s), in degrees (how the data was taken)
+
+		/** enum constructor to inizialize values */
+		public testedValue(double distanceFromTarget, double armPosition_rad){ //main constructor
+			this.distanceFromTarget = distanceFromTarget;
+			this.armPosition_rad = armPosition_rad;
+		}
+		//Use @Getter instead?
+		public double getDistance(){
+			return distanceFromTarget;
+		}
+		public double getDegreesRad(){
+			return armPosition_rad;
+		}
+	}
+
+	/** list of tested values sorted in ascending order of distance */
+	private testedValue[] testedValues = [testedValue(0,-1), testedValue(6,14)]
+
+	public double interpolateYaw(double distanceFromTarget){
+		private double closestVal_high;
+		private double closestVal_low;
+
+		for(int i=0; i<testedValues.length; i++){
+			if(distanceFromTarget<testedValues[i].getDistance()){
+				closestVal_high=testedValues[i];
+				closestVal_low=testedValues[i-1];
+				break;
+			}
+		}
+
+		return Math.toRadians(closestVal_low.getDegreesRad()+(((distanceFromTarget-closestVal_low.getDistance())/(closestVal_high.getDistance()-closestVal_low.getDistance()))*(closestVal_high.getDegreesRad()-closestVal_low.getDegreesRad())));
+	}
+
 	public void setPosition(double position_rad) {
 		targetPosition_rad = position_rad;
 		pidController.setReference(targetPosition_rad, ControlType.kPosition, 0,
