@@ -92,7 +92,7 @@ public class Arm extends SubsystemBase {
 	}
 
 	/** list of tested values sorted in ascending order of distance */
-	private testedValue[] testedValues = [testedValue(0,-1), testedValue(6,14)]
+	private testedValue[] testedValues = [new testedValue(0,-1), new testedValue(6,14)]
 
 	public double interpolateYaw(double distanceFromTarget){
 		private double closestVal_high;
