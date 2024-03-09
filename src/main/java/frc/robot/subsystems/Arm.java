@@ -78,6 +78,7 @@ public class Arm extends SubsystemBase {
 	enum testedValue {
 		private double distanceFromTarget; //total distance (hypotenuse from x and z directions) from the center of the robot to the target, in meters
 		private double armPosition_deg; //position of the arm motor(s), in degrees (how the data was taken)
+  //todo add shooter speed
 
 		/** enum constructor to inizialize values */
 		public testedValue(double distanceFromTarget, double armPosition_rad){ //main constructor
@@ -112,6 +113,7 @@ public class Arm extends SubsystemBase {
 			}
 		}
 
+  //todo - if high==low, send just one val
 		return closestVal_low.getDegreesRad()+(((distanceFromTarget-closestVal_low.getDistance())/(closestVal_high.getDistance()-closestVal_low.getDistance()))*(closestVal_high.getDegreesRad()-closestVal_low.getDegreesRad()));
 	}
 	/** END NEW CODE */
