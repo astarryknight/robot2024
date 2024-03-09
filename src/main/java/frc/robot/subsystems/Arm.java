@@ -78,12 +78,13 @@ public class Arm extends SubsystemBase {
 	enum testedValue {
 		private double distanceFromTarget; //total distance (hypotenuse from x and z directions) from the center of the robot to the target, in meters
 		private double armPosition_deg; //position of the arm motor(s), in degrees (how the data was taken)
-  //todo add shooter speed
+		private double shooterSpeed_rpm; //speed of the shooter motors, in rotations per minute
 
 		/** enum constructor to inizialize values */
-		public testedValue(double distanceFromTarget, double armPosition_rad){ //main constructor
+		public testedValue(double distanceFromTarget, double armPosition_rad, double shooterSpeed_rpm){ //main constructor
 			this.distanceFromTarget = distanceFromTarget;
 			this.armPosition_rad = armPosition_rad;
+			this.shooterSpeed_rpm = shooterSpeed_rpm
 		}
 		//Use @Getter instead?
 		public double getDistance(){
@@ -92,12 +93,18 @@ public class Arm extends SubsystemBase {
 		public double getDegreesRad(){
 			return Math.toRadians(armPosition_rad);
 		}
+		public double getShooterSpeed(){
+			return shooterSpeed_rpm;
+		}
 	}
 
 	/** list of tested values sorted in ascending order of distance */
 	private testedValue[] testedValues = [new testedValue(0,-1), new testedValue(6,14)]
 
-	public double interpolateYaw(double distanceFromTarget){
+	/** Uses tested values to interpolate the shooter speed and arm angle given total distance from the target (hypotenuse of x and z)
+	 *  Returns an enum continaing distance, arm angle, and shooter speed
+	*/
+	public testedValue interpolateShooter(double distanceFromTarget){
 		/** values that bound the distance (ie. low<distanceFromTarget<high) */
 		private double closestVal_high;
 		private double closestVal_low;
@@ -109,12 +116,13 @@ public class Arm extends SubsystemBase {
 				break;
 			} 
 			if(distanceFromTarget==testedValues[i].getDistance()){
-				return testedValues[i].getDegreesRad();
+				return testedValues[i] //returns the exact data point if the distance is exactly the same
 			}
 		}
 
-  //todo - if high==low, send just one val
-		return closestVal_low.getDegreesRad()+(((distanceFromTarget-closestVal_low.getDistance())/(closestVal_high.getDistance()-closestVal_low.getDistance()))*(closestVal_high.getDegreesRad()-closestVal_low.getDegreesRad()));
+		private double ratio = ((distanceFromTarget-closestVal_low.getDistance())/(closestVal_high.getDistance()-closestVal_low.getDistance()));
+		//sorry for long line of code... interpolates the arm angle, checks to make sure that the top and bottom shooter speeds are not the same - if they are, it will just return one of the shooter speeds 
+		return new testedValue(distanceFromTarget, MathUtil.interpolate(closestVal_low.getDegreesRad(), closestVal_high.getDegreesRad(), ratio), ((closestVal_high.getShooterSpeed()!=closestVal_low.getShooterSpeed()) ? MathUtil.interpolate(closestVal_low.getShooterSpeed(), closestVal_high.getShooterSpeed(), ratio) : closestVal_low.getShooterSpeed()));
 	}
 	/** END NEW CODE */
 
