@@ -72,6 +72,8 @@ public class Arm extends SubsystemBase {
 		inputs.velocity_radps = encoder.getVelocity();
 	}
 
+
+	/* NEW CODE */
 	/** Enum to store and access distance and arm rotation values from one constructor	 */
 	enum testedValue {
 		private double distanceFromTarget; //total distance (hypotenuse from x and z directions) from the center of the robot to the target, in meters
@@ -87,7 +89,7 @@ public class Arm extends SubsystemBase {
 			return distanceFromTarget;
 		}
 		public double getDegreesRad(){
-			return armPosition_rad;
+			return Math.toRadians(armPosition_rad);
 		}
 	}
 
@@ -95,6 +97,7 @@ public class Arm extends SubsystemBase {
 	private testedValue[] testedValues = [new testedValue(0,-1), new testedValue(6,14)]
 
 	public double interpolateYaw(double distanceFromTarget){
+		/** values that bound the distance (ie. low<distanceFromTarget<high) */
 		private double closestVal_high;
 		private double closestVal_low;
 
@@ -103,11 +106,16 @@ public class Arm extends SubsystemBase {
 				closestVal_high=testedValues[i];
 				closestVal_low=testedValues[i-1];
 				break;
+			} 
+			if(distanceFromTarget==testedValues[i].getDistance()){
+				return testedValues[i].getDegreesRad();
 			}
 		}
 
-		return Math.toRadians(closestVal_low.getDegreesRad()+(((distanceFromTarget-closestVal_low.getDistance())/(closestVal_high.getDistance()-closestVal_low.getDistance()))*(closestVal_high.getDegreesRad()-closestVal_low.getDegreesRad())));
+		return closestVal_low.getDegreesRad()+(((distanceFromTarget-closestVal_low.getDistance())/(closestVal_high.getDistance()-closestVal_low.getDistance()))*(closestVal_high.getDegreesRad()-closestVal_low.getDegreesRad()));
 	}
+	/** END NEW CODE */
+
 
 	public void setPosition(double position_rad) {
 		targetPosition_rad = position_rad;
